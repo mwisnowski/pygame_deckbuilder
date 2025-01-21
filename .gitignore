@@ -1,0 +1,14 @@
+*.csv
+*.json
+*.log
+*.txt
+.mypy_cache/
+test.py
+main.spec
+!requirements.txt
+__pycache__/
+build/
+csv_files/
+dist/
+logs/
+#*old.py
