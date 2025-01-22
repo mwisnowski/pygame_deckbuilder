@@ -48,9 +48,6 @@ class Game:
         self.current_state = 'main_menu'
         self.setup = Setup(self.display_surface)
     
-    def setup(self):
-        pass
-    
     def run(self):
         while True:
             delta_time = self.clock.tick(60) /1000
@@ -77,17 +74,36 @@ class Game:
                         elif action == 'Setup CSV Files':
                             logger.info('Switching to setup menu...')
                             self.current_state = 'setup'
-
+                
+                if event.type == pygame.KEYDOWN and self.current_state == 'main_menu':
+                    if event.key in (pygame.K_UP, pygame.K_w):
+                        self.main_menu.handle_keyboard_navigation('up')
+                    elif event.key in (pygame.K_DOWN, pygame.K_s):
+                        self.main_menu.handle_keyboard_navigation('down')
+                    elif event.key == pygame.K_RETURN:
+                        action = self.main_menu.handle_selection()
+                        if action:
+                            logger.info(f'Selected menu item: {action}')
+                            if action == 'Quit':
+                                logger.info('Quitting game...')
+                                pygame.quit()
+                                exit()
+                            elif action == 'Setup CSV Files':
+                                logger.info('Switching to setup menu...')
+                                self.current_state = 'setup'
             # Game logic
             self.all_sprites.update(delta_time)
             self.display_surface.fill(COLORS['black'])
-            
             if self.current_state == 'main_menu':
                 self.main_menu.render()
             elif self.current_state == 'setup':
+                # Draw setup menu background
+                self.display_surface.fill(COLORS['dark'])
+                
+                # Run setup and check for completion
                 if self.setup.run():
                     self.current_state = 'main_menu'
-            
+                
             pygame.display.flip()
 
 if __name__ == '__main__':
