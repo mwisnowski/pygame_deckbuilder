@@ -13,7 +13,7 @@ WINDOW_WIDTH: int = 1280
 WINDOW_HEIGHT: int = 720
 TILESIZE: int = 64
 
-COLORS: Dict[str, Optional[str]] = {
+PYGAME_COLORS: Dict[str, Optional[str]] = {
 	'white': '#f4fefa', 
 	'pure white': '#ffffff',
 	'dark': '#2b292c',
@@ -26,6 +26,22 @@ COLORS: Dict[str, Optional[str]] = {
 	'blue': '#66d7ee'
 }
 
+COLORS = ['colorless', 'white', 'blue', 'black', 'red', 'green',
+                'azorius', 'orzhov', 'selesnya', 'boros', 'dimir',
+                'simic', 'izzet', 'golgari', 'rakdos', 'gruul',
+                'bant', 'esper', 'grixis', 'jund', 'naya',
+                'abzan', 'jeskai', 'mardu', 'sultai', 'temur',
+                'dune', 'glint', 'ink', 'witch', 'yore', 'wubrg',
+                'commander']
+
+COLOR_ABRV: List[str] = ['Colorless', 'W', 'U', 'B', 'G', 'R',
+              'U, W', 'B, W', 'G, W', 'R, W', 'B, U',
+              'G, U', 'R, U', 'B, G', 'B, R', 'G, R',
+              'G, U, W', 'B, U, W', 'B, R, U', 'B, G, R', 'G, R, W',
+              'B, G, W', 'R, U, W', 'B, R, W', 'B, G, U', 'G, R, U',
+              'B, G, R, W', 'B, G, R, U', 'G, R, U, W', 'B, G, U, W',
+              'B, R, U, W', 'B, G, R, U, W']
+
 MAIN_MENU_ITEMS: List[str] = ['Build A Deck', 'Setup CSV Files', 'Tag CSV Files', 'Quit']
 
 SETUP_MENU_ITEMS: List[str] = ['Initial Setup', 'Regenerate CSV', 'Main Menu']
@@ -37,3 +53,7 @@ FILL_NA_COLUMNS: Dict[str, Optional[str]] = {
     'colorIdentity': 'Colorless',  # Default color identity for cards without one
     'faceName': None  # Use card's name column value when face name is not available
 }
+
+MULTIPLE_COPY_CARDS = ['Dragon\'s Approach', 'Hare Apparent', 'Nazgûl', 'Persistent Petitioners',
+                       'Rat Colony', 'Relentless Rats', 'Seven Dwarves', 'Shadowborn Apostle',
+                       'Slime Against Humanity', 'Templar Knight']

@@ -52,8 +52,6 @@ from pygame_progress_bar import PyGameProgressBar
 # Create logger for this module
 logger = logging_util.logging.getLogger(__name__)
 logger.setLevel(logging_util.LOG_LEVEL)
-
-# Add handlers to logger
 logger.addHandler(logging_util.file_handler)
 logger.addHandler(logging_util.stream_handler)
 

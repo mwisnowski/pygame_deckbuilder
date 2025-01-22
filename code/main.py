@@ -9,20 +9,18 @@ routing to different application features like setup, deck building, and CSV fil
 from __future__ import annotations
 
 # Standard library imports
-import sys
-import os
-from pathlib import Path
 
 # Third-party imports
 # Local imports
-from settings import exit, pygame, vector
+from settings import exit, pygame
+from menus.builder_menu import BuilderMenu
 from setup import Setup
+from builder import DeckBuilder
 from menus import MainMenu
-from settings import (COLORS, WINDOW_WIDTH,
-                      WINDOW_HEIGHT,
-                      MAIN_MENU_ITEMS)
+from settings import (PYGAME_COLORS, WINDOW_WIDTH,
+                      WINDOW_HEIGHT)
 from groups import AllSprites
-
+import tagger
 import logging_util
 
 # Create logger for this module
@@ -32,6 +30,7 @@ logger.setLevel(logging_util.LOG_LEVEL)
 # Add handlers to logger
 logger.addHandler(logging_util.file_handler)
 logger.addHandler(logging_util.stream_handler)
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -47,6 +46,9 @@ class Game:
         # State management
         self.current_state = 'main_menu'
         self.setup = Setup(self.display_surface)
+        self.tagger = tagger
+        self.builder = DeckBuilder()
+        self.builder_menu = BuilderMenu(self.display_surface)
     
     def run(self):
         while True:
@@ -74,6 +76,12 @@ class Game:
                         elif action == 'Setup CSV Files':
                             logger.info('Switching to setup menu...')
                             self.current_state = 'setup'
+                        elif action == 'Tag CSV Files':
+                            logger.info('Tagging CSV files...')
+                            self.current_state = 'tag'
+                        elif action == 'Build A Deck':
+                            logger.info('Launching Deck Builder...')
+                            self.current_state = 'build'
                 
                 if event.type == pygame.KEYDOWN and self.current_state == 'main_menu':
                     if event.key in (pygame.K_UP, pygame.K_w):
@@ -91,18 +99,49 @@ class Game:
                             elif action == 'Setup CSV Files':
                                 logger.info('Switching to setup menu...')
                                 self.current_state = 'setup'
+                            elif action == 'Tag CSV Files':
+                                logger.info('Tagging CSV files...')
+                                self.current_state = 'tag'
+                            elif action == 'Build A Deck':
+                                logger.info('Launching Deck Builder...')
+                                self.current_state = 'build'
+                                
             # Game logic
             self.all_sprites.update(delta_time)
-            self.display_surface.fill(COLORS['black'])
+            self.display_surface.fill(PYGAME_COLORS['black'])
             if self.current_state == 'main_menu':
                 self.main_menu.render()
+            
             elif self.current_state == 'setup':
                 # Draw setup menu background
-                self.display_surface.fill(COLORS['dark'])
+                self.display_surface.fill(PYGAME_COLORS['black'])
                 
                 # Run setup and check for completion
                 if self.setup.run():
                     self.current_state = 'main_menu'
+            
+            elif self.current_state == 'tag':
+                # Draw setup menu background
+                self.display_surface.fill(PYGAME_COLORS['black'])
+                
+                # Run tagger and check for completion
+                if self.tagger:
+                    tagger.run_tagging()
+                    self.current_state = 'main_menu'
+            
+            elif self.current_state == 'build':
+                self.display_surface.fill(PYGAME_COLORS['black'])
+                
+                if self.builder:
+                    # Update and render builder menu
+                    if not hasattr(self.builder, 'commander'):
+                        self.builder.determine_commander()
+                        
+                    # Update builder menu
+                    self.builder_menu.update()
+                    
+                    # Render builder menu
+                    self.builder_menu.render()
                 
             pygame.display.flip()
 
