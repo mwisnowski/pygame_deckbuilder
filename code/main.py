@@ -20,9 +20,10 @@ from file_setup import Setup
 from menus import MainMenu
 from settings import (PYGAME_COLORS, WINDOW_WIDTH,
                       WINDOW_HEIGHT)
-from groups import AllSprites
+from deck_builder.builder import DeckBuilder
 from tagging import tagger
 import logging_util
+from groups import AllSprites
 
 # Create logger for this module
 logger = logging_util.logging.getLogger(__name__)
@@ -50,6 +51,7 @@ class Game:
         self.current_state = 'main_menu'
         self.setup = Setup(self.display_surface)
         self.tagger = tagger
+        self.builder = DeckBuilder()
 
     def display_popup(self, message):
         # Create semi-transparent overlay
@@ -102,8 +104,8 @@ class Game:
                             logger.info('Tagging CSV files...')
                             self.current_state = 'tag'
                         elif action == 'Build A Deck':
-                            logger.info('Displaying build function in progress pop-up')
-                            self.popup_start_time = pygame.time.get_ticks()
+                            #logger.info('Displaying build function in progress pop-up')
+                            #self.popup_start_time = pygame.time.get_ticks()
                             self.current_state = 'build'
                 
                 if event.type == pygame.KEYDOWN and self.current_state == 'main_menu':
@@ -126,8 +128,8 @@ class Game:
                                 logger.info('Tagging CSV files...')
                                 self.current_state = 'tag'
                             elif action == 'Build A Deck':
-                                logger.info('Displaying build function in progress pop-up')
-                                self.popup_start_time = pygame.time.get_ticks()
+                                #logger.info('Displaying build function in progress pop-up')
+                                #self.popup_start_time = pygame.time.get_ticks()
                                 self.current_state = 'build'
                                 
             # Game logic
@@ -155,14 +157,17 @@ class Game:
             
             elif self.current_state == 'build':
                 self.display_surface.fill(PYGAME_COLORS['black'])
-                self.main_menu.render()
+                if self.builder:
+                    # Update and render builder menu
+                    self.builder.determine_commander()
+                #self.main_menu.render()
                 # Check if 2 seconds have passed
-                current_time = pygame.time.get_ticks()
-                if current_time - self.popup_start_time <= 2000:  # 2000 milliseconds = 2 seconds
-                    self.display_popup('Build function is in progress.')
-                else:
+                #current_time = pygame.time.get_ticks()
+                #if current_time - self.popup_start_time <= 2000:  # 2000 milliseconds = 2 seconds
+                #    self.display_popup('Build function is in progress.')
+                #else:
                     # Reset to main menu after popup duration
-                    self.current_state = 'main_menu'
+                #    self.current_state = 'main_menu'
             
             pygame.display.flip()
 
