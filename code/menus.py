@@ -8,7 +8,7 @@ from typing import List, Tuple, Optional
 import pygame
 # Local imports
 from settings import (
-    COLORS,
+    PYGAME_COLORS,
     WINDOW_WIDTH,
     WINDOW_HEIGHT,
     MAIN_MENU_ITEMS,
@@ -39,7 +39,7 @@ class Menus:
         menu_y = WINDOW_HEIGHT // 2 - len(self.items) * 25
         
         for item in self.items:
-            text = self.font.render(item, True, COLORS['white'])
+            text = self.font.render(item, True, PYGAME_COLORS['white'])
             text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, menu_y))
             self.item_rects.append(text_rect)
             menu_y += 50
@@ -54,7 +54,7 @@ class Menus:
     def render(self) -> None:
         """Render menu items on the display surface."""
         for i, (item, rect) in enumerate(zip(self.items, self.item_rects)):
-            color = COLORS['gold'] if i == self.selected_item or i == self.current_selection_index else COLORS['white']
+            color = PYGAME_COLORS['gold'] if i == self.selected_item or i == self.current_selection_index else PYGAME_COLORS['white']
             text = self.font.render(item, True, color)
             self.display_surface.blit(text, rect)
 

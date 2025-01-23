@@ -32,7 +32,7 @@ import pandas as pd
 import logging_util
 from pygame_progress_bar import PyGameProgressBar
 from menus import SetupMenu
-from settings import COLORS, CSV_DIRECTORY, WINDOW_HEIGHT, WINDOW_WIDTH
+from settings import PYGAME_COLORS, CSV_DIRECTORY, WINDOW_HEIGHT, WINDOW_WIDTH
 from setup_constants import BANNED_CARDS, SETUP_COLORS, COLOR_ABRV, MTGJSON_API_URL
 from setup_utils import (
     download_cards_csv,
@@ -51,12 +51,10 @@ from exceptions import (
 # Create logger for this module
 logger = logging_util.logging.getLogger(__name__)
 logger.setLevel(logging_util.LOG_LEVEL)
-
-# Add handlers to logger
 logger.addHandler(logging_util.file_handler)
 logger.addHandler(logging_util.stream_handler)
 
-# Create logs directory if it doesn't exist
+# Create CSV directory if it doesn't exist
 if not os.path.exists(CSV_DIRECTORY):
     os.makedirs(CSV_DIRECTORY)
 
@@ -148,7 +146,7 @@ class Setup:
 
     def draw(self) -> None:
         """Draw the setup menu."""
-        self.display_surface.fill(COLORS['dark'])
+        self.display_surface.fill(PYGAME_COLORS['black'])
         self.setup_menu.render()
     
     def check_csv_exists(self, file_path: Union[str, Path]) -> bool:
@@ -336,6 +334,7 @@ class Setup:
         except Exception as e:
             logger.error(f'Unexpected error during commander generation: {str(e)}')
             raise
+    
     def regenerate_csvs_all(self, progress_bar: PyGameProgressBar) -> None:
         """Regenerate all color-filtered CSV files from latest card data.
         

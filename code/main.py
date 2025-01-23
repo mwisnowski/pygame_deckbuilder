@@ -18,11 +18,10 @@ from pathlib import Path
 from settings import exit, pygame, vector
 from setup import Setup
 from menus import MainMenu
-from settings import (COLORS, WINDOW_WIDTH,
-                      WINDOW_HEIGHT,
-                      MAIN_MENU_ITEMS)
+from settings import (PYGAME_COLORS, WINDOW_WIDTH,
+                      WINDOW_HEIGHT)
 from groups import AllSprites
-
+import tagger
 import logging_util
 
 # Create logger for this module
@@ -34,6 +33,9 @@ logger.addHandler(logging_util.file_handler)
 logger.addHandler(logging_util.stream_handler)
 class Game:
     def __init__(self):
+        # Add timer and flag for pop-up
+        self.popup_start_time = 0
+        self.showing_popup = False
         pygame.init()
         self.FONT = pygame.font.Font(None, 36)
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -47,7 +49,25 @@ class Game:
         # State management
         self.current_state = 'main_menu'
         self.setup = Setup(self.display_surface)
-    
+        self.tagger = tagger
+
+    def display_popup(self, message):
+        # Create semi-transparent overlay
+        overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        overlay.fill(PYGAME_COLORS['black'])
+        overlay.set_alpha(128)
+        self.display_surface.blit(overlay, (0, 0))
+
+        # Render message
+        text_surface = self.FONT.render(message, True, PYGAME_COLORS['white'])
+        text_rect = text_surface.get_rect()
+        text_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
+
+        # Draw message
+        pygame.draw.rect(self.display_surface, PYGAME_COLORS['black'], 
+                        text_rect.inflate(20, 20))
+        self.display_surface.blit(text_surface, text_rect)
+
     def run(self):
         while True:
             delta_time = self.clock.tick(60) /1000
@@ -63,6 +83,10 @@ class Game:
                     pygame.quit()
                     exit()
                 
+                # Handle any input during build state to dismiss popup
+                if self.current_state == 'build' and event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
+                    self.current_state = 'main_menu'
+                
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state == 'main_menu':
                         action = self.main_menu.handle_click(mouse_pos)
@@ -74,6 +98,13 @@ class Game:
                         elif action == 'Setup CSV Files':
                             logger.info('Switching to setup menu...')
                             self.current_state = 'setup'
+                        elif action == 'Tag CSV Files':
+                            logger.info('Tagging CSV files...')
+                            self.current_state = 'tag'
+                        elif action == 'Build A Deck':
+                            logger.info('Displaying build function in progress pop-up')
+                            self.popup_start_time = pygame.time.get_ticks()
+                            self.current_state = 'build'
                 
                 if event.type == pygame.KEYDOWN and self.current_state == 'main_menu':
                     if event.key in (pygame.K_UP, pygame.K_w):
@@ -91,19 +122,48 @@ class Game:
                             elif action == 'Setup CSV Files':
                                 logger.info('Switching to setup menu...')
                                 self.current_state = 'setup'
+                            elif action == 'Tag CSV Files':
+                                logger.info('Tagging CSV files...')
+                                self.current_state = 'tag'
+                            elif action == 'Build A Deck':
+                                logger.info('Displaying build function in progress pop-up')
+                                self.popup_start_time = pygame.time.get_ticks()
+                                self.current_state = 'build'
+                                
             # Game logic
             self.all_sprites.update(delta_time)
-            self.display_surface.fill(COLORS['black'])
+            self.display_surface.fill(PYGAME_COLORS['black'])
             if self.current_state == 'main_menu':
                 self.main_menu.render()
+            
             elif self.current_state == 'setup':
                 # Draw setup menu background
-                self.display_surface.fill(COLORS['dark'])
+                self.display_surface.fill(PYGAME_COLORS['black'])
                 
                 # Run setup and check for completion
                 if self.setup.run():
                     self.current_state = 'main_menu'
+            
+            elif self.current_state == 'tag':
+                # Draw setup menu background
+                self.display_surface.fill(PYGAME_COLORS['black'])
                 
+                # Run tagger and check for completion
+                if self.tagger:
+                    tagger.run_tagging()
+                    self.current_state = 'main_menu'
+            
+            elif self.current_state == 'build':
+                self.display_surface.fill(PYGAME_COLORS['black'])
+                self.main_menu.render()
+                # Check if 2 seconds have passed
+                current_time = pygame.time.get_ticks()
+                if current_time - self.popup_start_time <= 2000:  # 2000 milliseconds = 2 seconds
+                    self.display_popup('Build function is in progress.')
+                else:
+                    # Reset to main menu after popup duration
+                    self.current_state = 'main_menu'
+            
             pygame.display.flip()
 
 if __name__ == '__main__':
