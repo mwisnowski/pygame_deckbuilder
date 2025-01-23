@@ -21,7 +21,7 @@ from menus import MainMenu
 from settings import (PYGAME_COLORS, WINDOW_WIDTH,
                       WINDOW_HEIGHT)
 from groups import AllSprites
-import tagger
+from tagging import tagger
 import logging_util
 
 # Create logger for this module

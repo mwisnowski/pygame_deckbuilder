@@ -10,9 +10,9 @@ import pandas as pd
 import pygame
 
 # Local application imports
-import tag_utils
+from . import tag_utils
+from . import tag_constants
 from settings import CSV_DIRECTORY, MULTIPLE_COPY_CARDS, COLORS, PYGAME_COLORS
-import tag_constants
 import logging_util
 from pygame_progress_bar import PyGameProgressBar
 from setup import Setup

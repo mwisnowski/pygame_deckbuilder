@@ -22,7 +22,7 @@ from typing import List, Set, Union, Any
 import pandas as pd
 
 # Local application imports
-import tag_constants
+from . import tag_constants
 
 def pluralize(word: str) -> str:
     """Convert a word to its plural form using basic English pluralization rules.
