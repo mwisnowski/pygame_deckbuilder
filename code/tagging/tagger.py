@@ -15,7 +15,7 @@ from . import tag_constants
 from settings import CSV_DIRECTORY, MULTIPLE_COPY_CARDS, COLORS, PYGAME_COLORS
 import logging_util
 from pygame_progress_bar import PyGameProgressBar
-from setup import Setup
+from file_setup import Setup
 
 # Create logger for this module
 logger = logging_util.logging.getLogger(__name__)

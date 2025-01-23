@@ -33,8 +33,8 @@ import logging_util
 from pygame_progress_bar import PyGameProgressBar
 from menus import SetupMenu
 from settings import PYGAME_COLORS, CSV_DIRECTORY, WINDOW_HEIGHT, WINDOW_WIDTH
-from setup_constants import BANNED_CARDS, SETUP_COLORS, COLOR_ABRV, MTGJSON_API_URL
-from setup_utils import (
+from .setup_constants import BANNED_CARDS, SETUP_COLORS, COLOR_ABRV, MTGJSON_API_URL
+from .setup_utils import (
     download_cards_csv,
     filter_by_color_identity,
     filter_dataframe,

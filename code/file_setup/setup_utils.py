@@ -28,7 +28,7 @@ import pygame
 import pandas as pd
 
 # Local application imports
-from setup_constants import (
+from .setup_constants import (
     CSV_PROCESSING_COLUMNS,
     CARD_TYPES_TO_EXCLUDE,
     NON_LEGAL_SETS,
@@ -293,6 +293,7 @@ def filter_by_color_identity(df: pd.DataFrame, color_identity: str, progress_bar
             color_identity,
             str(e)
         ) from e
+
 def process_legendary_cards(df: pd.DataFrame, progress_bar: Optional['PyGameProgressBar'] = None) -> pd.DataFrame:
     """Process and filter legendary cards for commander eligibility with comprehensive validation.
 

@@ -16,7 +16,7 @@ from pathlib import Path
 # Third-party imports
 # Local imports
 from settings import exit, pygame, vector
-from setup import Setup
+from file_setup import Setup
 from menus import MainMenu
 from settings import (PYGAME_COLORS, WINDOW_WIDTH,
                       WINDOW_HEIGHT)
