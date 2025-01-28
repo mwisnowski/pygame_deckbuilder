@@ -5,9 +5,15 @@ from __future__ import annotations
 import logging
 import os
 from typing import Any, List, Optional, Tuple, Union
-import inquirer.prompt 
+import pygame
+from ui_components import TextBox, Button, Label
+from pygame import Surface
+from pygame.font import Font
 from settings import (
-    COLORS, COLOR_ABRV)
+    COLORS, COLOR_ABRV, UI_COLORS,
+    UI_DIMENSIONS, DEFAULT_FONT_PATH,
+    DEFAULT_FONT_SIZE
+)
 from .builder_constants import (DEFAULT_MAX_CARD_PRICE,
     DEFAULT_MAX_DECK_PRICE, DEFAULT_THEME_TAGS, MONO_COLOR_MAP,
     DUAL_COLOR_MAP, TRI_COLOR_MAP, OTHER_COLOR_MAP
@@ -91,10 +97,34 @@ class InputHandler:
         self.default_text = default_text
         self.default_number = default_number
         self.default_confirm = default_confirm
+        
+        # UI Components
+        self.textbox = None
+        self.buttons = []
+        self.label = None
+        self.active_component = None
+        self.result = None
+        self.submitted = False
+        
+    def setup_ui(self, x: int, y: int, message: str) -> None:
+        """Setup UI components for input."""
+        self.label = Label(x, y, message)
+        y += UI_DIMENSIONS['textbox_height'] + UI_DIMENSIONS['padding']
+        
+        self.textbox = TextBox(x, y)
+        y += UI_DIMENSIONS['textbox_height'] + UI_DIMENSIONS['padding']
+        
+        submit_btn = Button(x, y, 'Submit', on_click=self.handle_submit)
+        self.buttons = [submit_btn]
+        
+    def handle_submit(self) -> None:
+        """Handle submit button click."""
+        if self.textbox:
+            self.result = self.textbox.text
+            self.submitted = True
     
     def validate_text(self, result: str) -> bool:
         """Validate text input is not empty.
-        
         Args:
             result: Text input to validate
             
@@ -190,88 +220,67 @@ class InputHandler:
         default_value: Any = None,
         choices_list: List[str] = None
     ) -> Union[str, float, bool]:
-        """Present questions to user and handle input validation.
+        """Present questions to user using PyGame UI components and handle input validation.
+        
+        This method creates and manages UI components (TextBox, Button, Label) to collect
+        user input through the PyGame interface. It supports different types of questions
+        and maintains input validation logic.
         
         Args:
-            question_type: Type of question ('Text', 'Number', 'Confirm', 'Choice')
-            message: Question message to display
-            default_value: Default value for the question
+            question_type: Type of question ('Text', 'Price', 'Number', 'Confirm', 'Choice')
+            message: Question message to display in the UI
+            default_value: Default value for the input field
             choices_list: List of choices for Choice type questions
             
         Returns:
-            Validated user input of appropriate type
+            Union[str, float, bool]: Validated user input of appropriate type:
+                - str: For Text and Choice questions
+                - float: For Price and Number questions
+                - bool: For Confirm questions
             
         Raises:
             InvalidQuestionTypeError: If question_type is not supported
             MaxAttemptsError: If maximum retry attempts are exceeded
+            Various validation errors depending on question_type:
+                - EmptyInputError: For empty text input
+                - InvalidNumberError: For invalid number format
+                - PriceValidationError: For invalid price format
+                - PriceLimitError: For prices exceeding threshold
         """
         attempts = 0
+        x = UI_DIMENSIONS['padding']
+        y = UI_DIMENSIONS['padding']
+        self.setup_ui(x, y, message)
+        self.submitted = False
+        self.result = None
         
         while attempts < self.max_attempts:
             try:
-                if question_type == 'Text':
-                    question = [
-                        inquirer.Text(
-                            'text',
-                            message=f'{message}' or 'Enter text',
-                            default=default_value or self.default_text
-                        )
-                    ]
-                    result = inquirer.prompt(question)['text']
-                    if self.validate_text(result):
-                        return str(result)
-                
-                elif question_type == 'Price':
-                    question = [
-                        inquirer.Text(
-                            'price',
-                            message=f'{message}' or 'Enter price (or "unlimited")',
-                            default=str(default_value or DEFAULT_MAX_CARD_PRICE)
-                        )
-                    ]
-                    result = inquirer.prompt(question)['price']
-                    price, is_unlimited = self.validate_price(result)
-                    if not is_unlimited:
-                        self.validate_price_threshold(price)
-                    return float(price)
-                
-                elif question_type == 'Number':
-                    question = [
-                        inquirer.Text(
-                            'number',
-                            message=f'{message}' or 'Enter number',
-                            default=str(default_value or self.default_number)
-                        )
-                    ]
-                    result = inquirer.prompt(question)['number']
-                    return self.validate_number(result)
-                
-                elif question_type == 'Confirm':
-                    question = [
-                        inquirer.Confirm(
-                            'confirm',
-                            message=f'{message}' or 'Confirm?',
-                            default=default_value if default_value is not None else self.default_confirm
-                        )
-                    ]
-                    result = inquirer.prompt(question)['confirm']
-                    return self.validate_confirm(result)
-                
-                elif question_type == 'Choice':
-                    if not choices_list:
-                        raise ValueError("Choices list cannot be empty for Choice type")
-                    question = [
-                        inquirer.List(
-                            'selection',
-                            message=f'{message}' or 'Select an option',
-                            choices=choices_list,
-                            carousel=True
-                        )
-                    ]
-                    return inquirer.prompt(question)['selection']
-                
-                else:
+                if question_type not in ['Text', 'Price', 'Number', 'Confirm', 'Choice']:
                     raise InvalidQuestionTypeError(question_type)
+                
+                if self.submitted:
+                    if question_type == 'Text':
+                        if self.validate_text(self.result):
+                            return str(self.result)
+                    
+                    elif question_type == 'Price':
+                        price, is_unlimited = self.validate_price(self.result)
+                        if not is_unlimited:
+                            self.validate_price_threshold(price)
+                        return float(price)
+                    
+                    elif question_type == 'Number':
+                        return self.validate_number(self.result)
+                    
+                    elif question_type == 'Confirm':
+                        return self.validate_confirm(self.result.lower() == 'true')
+                    
+                    elif question_type == 'Choice':
+                        if self.result in choices_list:
+                            return self.result
+                        
+                    self.submitted = False
                 
             except DeckBuilderError as e:
                 logger.warning(f"Input validation failed: {e}")
@@ -288,6 +297,40 @@ class InputHandler:
                 raise
         
         raise MaxAttemptsError(self.max_attempts, question_type.lower())
+    
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        """Handle PyGame events for input components.
+        
+        Args:
+            event: PyGame event to handle
+            
+        Returns:
+            True if event was handled
+        """
+        if self.textbox:
+            if self.textbox.handle_event(event):
+                return True
+                
+        for button in self.buttons:
+            if button.handle_event(event):
+                return True
+                
+        return False
+    
+    def draw(self, surface: Surface) -> None:
+        """Draw input components.
+        
+        Args:
+            surface: Surface to draw on
+        """
+        if self.label:
+            self.label.draw(surface)
+            
+        if self.textbox:
+            self.textbox.draw(surface)
+            
+        for button in self.buttons:
+            button.draw(surface)
 
     def validate_commander_type(self, type_line: str) -> str:
         """Validate commander type line requirements.

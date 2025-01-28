@@ -16,6 +16,7 @@ from pathlib import Path
 # Third-party imports
 # Local imports
 from settings import exit, pygame, vector
+from deck_builder.input_handler import InputHandler
 from file_setup import Setup
 from menus import MainMenu
 from settings import (PYGAME_COLORS, WINDOW_WIDTH,
@@ -34,9 +35,6 @@ logger.addHandler(logging_util.file_handler)
 logger.addHandler(logging_util.stream_handler)
 class Game:
     def __init__(self):
-        # Add timer and flag for pop-up
-        self.popup_start_time = 0
-        self.showing_popup = False
         pygame.init()
         self.FONT = pygame.font.Font(None, 36)
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -52,6 +50,10 @@ class Game:
         self.setup = Setup(self.display_surface)
         self.tagger = tagger
         self.builder = DeckBuilder()
+        
+        # Input handling
+        self.input_handler = InputHandler()
+        self.input_active = False
 
     def display_popup(self, message):
         # Create semi-transparent overlay
@@ -80,13 +82,17 @@ class Game:
 
             # Event loop
             for event in pygame.event.get():
+                # Handle input events if input is active
+                if self.input_active and self.input_handler.handle_event(event):
+                    continue
+                    
                 if event.type == pygame.QUIT:
                     logger.info('Quitting game...')
                     pygame.quit()
                     exit()
                 
-                # Handle any input during build state to dismiss popup
-                if self.current_state == 'build' and event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
+                # Handle build state input
+                if self.current_state == 'build' and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.current_state = 'main_menu'
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -158,16 +164,18 @@ class Game:
             elif self.current_state == 'build':
                 self.display_surface.fill(PYGAME_COLORS['black'])
                 if self.builder:
-                    # Update and render builder menu
-                    self.builder.determine_commander()
-                #self.main_menu.render()
-                # Check if 2 seconds have passed
-                #current_time = pygame.time.get_ticks()
-                #if current_time - self.popup_start_time <= 2000:  # 2000 milliseconds = 2 seconds
-                #    self.display_popup('Build function is in progress.')
-                #else:
-                    # Reset to main menu after popup duration
-                #    self.current_state = 'main_menu'
+                    # Activate input handling
+                    self.input_active = True
+                    
+                    # Update and render builder with input handler
+                    self.builder.determine_commander(self.input_handler)
+                    
+                    # Draw input interface
+                    if self.input_active:
+                        self.input_handler.draw(self.display_surface)
+                else:
+                    self.input_active = False
+                    self.current_state = 'main_menu'
             
             pygame.display.flip()
 

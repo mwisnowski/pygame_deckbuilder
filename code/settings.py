@@ -11,6 +11,49 @@ from pygame.math import Vector2 as vector
 
 WINDOW_WIDTH: int = 1280
 WINDOW_HEIGHT: int = 720
+
+# UI Font Settings
+FONT_DIR: str = 'assets/fonts'
+DEFAULT_FONT_PATH: str = os.path.join(FONT_DIR, 'Arial.ttf')
+DEFAULT_FONT_SIZE: int = 20
+HEADER_FONT_SIZE: int = 32
+SMALL_FONT_SIZE: int = 16
+
+# UI Colors
+UI_COLORS: Dict[str, str] = {
+    'text': '#000000',  # Black
+    'text_inactive': '#666666',  # Gray
+    'background': '#FFFFFF',  # White
+    'button': '#4A90E2',  # Blue
+    'button_hover': '#357ABD',  # Darker Blue
+    'button_disabled': '#CCCCCC',  # Light Gray
+    'textbox': '#FFFFFF',  # White
+    'textbox_border': '#CCCCCC',  # Light Gray
+    'error': '#FF0000',  # Red
+    'success': '#00FF00',  # Green
+    'highlight': '#FFF3B8'  # Light Yellow
+}
+
+# UI Component Dimensions
+UI_DIMENSIONS = {
+    'textbox_width': 300,
+    'textbox_height': 40,
+    'button_width': 200,
+    'button_height': 50,
+    'padding': 10,
+    'border_width': 2,
+    'border_radius': 5
+}
+
+# Input Settings
+INPUT_SETTINGS = {
+    'cursor_blink_time': 500,  # milliseconds
+    'max_chars': 50,
+    'scroll_speed': 5,
+    'double_click_time': 500,  # milliseconds
+    'key_repeat_delay': 300,  # milliseconds
+    'key_repeat_interval': 50  # milliseconds
+}
 TILESIZE: int = 64
 
 PYGAME_COLORS: Dict[str, Optional[str]] = {

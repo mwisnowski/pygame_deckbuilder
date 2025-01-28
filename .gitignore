@@ -11,3 +11,4 @@ build/
 csv_files/
 dist/
 logs/
+*old.py
